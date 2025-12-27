@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derpedia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #fff;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            max-width: 200px;
+            display: block;
+            margin: 0 auto;
+        }
+        .logo-text {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 3rem;
+            margin-top: 10px;
+            color: #333;
+        }
+        .search-container {
+            width: 100%;
+            max-width: 584px;
+            margin-bottom: 30px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 10px 15px;
+            box-shadow: 0 1px 6px rgba(32,33,36,.28);
+        }
+        .search-box:hover {
+            box-shadow: 0 1px 6px rgba(32,33,36,.28), 0 1px 1px rgba(32,33,36,.1);
+            border-color: rgba(223,225,229,0);
+        }
+        .search-input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 0 10px;
+        }
+        .buttons-container {
+            text-align: center;
+        }
+        .btn {
+            background-color: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            border-radius: 4px;
+            color: #3c4043;
+            font-family: arial,sans-serif;
+            font-size: 14px;
+            margin: 11px 4px;
+            padding: 0 16px;
+            line-height: 27px;
+            height: 36px;
+            min-width: 54px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn:hover {
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            background-color: #f8f9fa;
+            border: 1px solid #dadce0;
+            color: #202124;
+        }
+        #image-preview-container {
+            display: none;
+            margin-right: 10px;
+            position: relative;
+        }
+        #image-preview {
+            max-height: 40px;
+            border-radius: 4px;
+        }
+        .remove-image {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .hint {
+            margin-top: 15px;
+            color: #777;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <img src="/static/derpedia.png" alt="Derpedia Logo">
+        <div class="logo-text">Derpedia</div>
+    </div>
+
+    <form action="/search" method="post" enctype="multipart/form-data" class="search-container" id="search-form">
+        <div class="search-box">
+            <!-- Hidden file input -->
+            <input type="file" name="image" id="image-input" accept="image/*" style="display: none;">
+
+            <!-- Image preview -->
+            <div id="image-preview-container">
+                <img id="image-preview" src="" alt="Preview">
+                <div class="remove-image" onclick="clearImage()">×</div>
+            </div>
+
+            <!-- Text input -->
+            <input type="text" name="q" class="search-input" id="search-text" placeholder="Search or paste an image..." autocomplete="off">
+        </div>
+
+        <div class="buttons-container">
+            <button type="submit" class="btn">Search</button>
+            <button type="submit" class="btn">I'm Feeling Derpy</button>
+        </div>
+    </form>
+
+    <div class="hint">Pro Tip: Paste (Ctrl+V) an image to search visually!</div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

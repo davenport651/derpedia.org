@@ -1,0 +1,107 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f6f6f6;
+    color: #202122;
+    display: flex;
+}
+
+a {
+    color: #3366cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.wiki-container {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    min-height: 100vh;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.wiki-sidebar {
+    width: 176px;
+    padding: 20px;
+    background-color: #f6f6f6;
+    border-right: 1px solid #a7d7f9;
+    flex-shrink: 0;
+    font-size: 0.85em;
+}
+
+.sidebar-logo {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.wiki-sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wiki-sidebar li {
+    margin-bottom: 5px;
+}
+
+.wiki-main {
+    padding: 20px 40px;
+    flex-grow: 1;
+}
+
+.firstHeading {
+    border-bottom: 1px solid #a2a9b1;
+    margin-bottom: 0.25em;
+    padding-bottom: 5px;
+    font-family: 'Linux Libertine','Georgia','Times',serif;
+    font-size: 1.8em;
+    font-weight: normal;
+}
+
+.siteSub {
+    font-size: 0.8em;
+    color: #54595d;
+    margin-bottom: 1.5em;
+}
+
+/* Wikipedia Content Styles mimicking MediaWiki */
+.mw-content-ltr p {
+    margin: 0.5em 0 1em 0;
+    line-height: 1.6;
+}
+
+.mw-content-ltr h2 {
+    font-family: 'Linux Libertine','Georgia','Times',serif;
+    border-bottom: 1px solid #a2a9b1;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+    font-weight: normal;
+    padding-bottom: 5px;
+    font-size: 1.5em;
+}
+
+.mw-content-ltr h3 {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+}
+
+/* Infobox mimic (simple) */
+table {
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+
+th, td {
+    border: 1px solid #a2a9b1;
+    padding: 0.2em 0.4em;
+}

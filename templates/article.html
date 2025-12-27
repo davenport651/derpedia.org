@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Derpedia</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="wiki-container">
+        <div class="wiki-sidebar">
+            <div class="sidebar-logo">
+                <img src="/static/derpedia.png" alt="Derpedia" style="width: 100px;">
+                <br>Derpedia
+            </div>
+            <ul>
+                <li><a href="/">Main page</a></li>
+                <li><a href="#">Contents</a></li>
+                <li><a href="#">Current events</a></li>
+                <li><a href="#">Random article</a></li>
+                <li><a href="#">About Derpedia</a></li>
+            </ul>
+        </div>
+        <div class="wiki-main">
+            <h1 class="firstHeading">{{ title }}</h1>
+            <div class="siteSub">From Derpedia, the free encyclopedia</div>
+            <div class="mw-content-ltr">
+                {{ content | safe }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
