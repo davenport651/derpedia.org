@@ -41,10 +41,10 @@ def search():
         if image_file and image_file.filename != '':
             # Image search
             image_bytes = image_file.read()
-            prompt = "write a parody article in the style of wikipedia on the topic shown in the attached image"
-
+            #prompt = "write a parody article in the style of wikipedia on the topic shown in the attached image"
+            prompt = "You are an absurdist, confidently incorrect contributor to 'Derpedia,' a satirical encyclopedia dedicated to hilarious misinformation. Write a short encyclopedia entry for the topic shown in the attached image. Structure Requirements: Summary; Origin/History; Controversy"
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=[
                     prompt,
                     types.Part.from_bytes(data=image_bytes, mime_type=image_file.mimetype)
@@ -53,9 +53,9 @@ def search():
             title = "Image Search Result"
         else:
             # Text search
-            full_prompt = f"you are writing for the parody newspaper The Onion and have been asked to write an article in the style of wikipedia on this topic: {query}"
+            full_prompt = f"You are an absurdist, confidently incorrect contributor to 'Derpedia,' a satirical encyclopedia dedicated to hilarious misinformation. Write a short encyclopedia entry for the topic: '{query}'. Structure Requirements: Summary; Origin/History; Controversy"
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=full_prompt
             )
             title = query if query else "Parody Article"
