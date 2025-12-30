@@ -27,3 +27,23 @@
  * Restarting with stat
  * Debugger is active!
  * Debugger PIN: 109-110-124
+ * Detected change in '/app/check_models.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 109-110-124
+ * Detected change in '/app/verify_image_gen.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 109-110-124
+ * Detected change in '/app/verify_image_gen.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 109-110-124
+ * Detected change in '/app/app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 109-110-124
+ * Detected change in '/app/tests/test_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 109-110-124

@@ -117,23 +117,26 @@ def search():
                     title = candidate_title
                     content_md = "\n".join(lines[1:])
 
-            # 2. Generate Image (Imagen)
+            # 2. Generate Image (Gemini 2.0 / Experimental)
             generated_image_b64 = None
             try:
-                # Attempt to use Imagen 3. Note: This requires the account to have access to the model.
-                image_response = client.models.generate_images(
-                    model='imagen-3.0-generate-001',
-                    prompt=image_prompt_text,
-                    config=types.GenerateImagesConfig(
-                        number_of_images=1,
-                    )
+                # Use Gemini 2.0 Flash (or experimental) which has native image generation capabilities.
+                # This replaces the specific Imagen model call.
+                image_response = client.models.generate_content(
+                    model='gemini-2.0-flash-exp',
+                    contents=f"Generate an image of {image_prompt_text}",
+                    # Note: Some versions require specific config or just text prompt to trigger image gen.
+                    # We look for inline data in the response.
                 )
-                if image_response.generated_images:
-                    img_bytes = image_response.generated_images[0].image.image_bytes
-                    generated_image_b64 = base64.b64encode(img_bytes).decode('utf-8')
+                if image_response.candidates:
+                    for part in image_response.candidates[0].content.parts:
+                         if part.inline_data:
+                             img_bytes = part.inline_data.data
+                             generated_image_b64 = base64.b64encode(img_bytes).decode('utf-8')
+                             break
             except Exception as img_err:
                 # detailed logging for the user to debug
-                print(f"Image generation failed: {img_err}. Note: 'imagen-3.0-generate-001' might not be enabled for this API key.")
+                print(f"Image generation failed: {img_err}. Note: You may be hitting quota limits on the 'gemini-2.0-flash-exp' model.")
                 # Non-blocking failure, just no image
 
             # 3. Process Wiki-Links [[Topic]] -> <a href="/search?q=Topic">Topic</a>
