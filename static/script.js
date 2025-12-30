@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // If "I'm Feeling Derpy" was clicked, we technically don't need to lock the input value,
         // but locking the UI is good feedback.
 
-        // Disable inputs and buttons
-        searchInput.disabled = true;
+        // Disable inputs and buttons (use readOnly for text input so value is sent)
+        searchInput.readOnly = true;
         searchButton.disabled = true;
         derpyButton.disabled = true;
 

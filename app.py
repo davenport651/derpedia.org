@@ -69,11 +69,12 @@ def search():
             "You are an absurdist, confidently incorrect contributor to 'Derpedia,' a satirical encyclopedia dedicated to hilarious misinformation. "
             "Write a short encyclopedia entry. "
             "Structure Requirements: "
-            "1. Start with a Markdown table representing a Wikipedia infobox (key-value pairs). "
-            "2. Summary. "
-            "3. Origin/History. "
-            "4. Controversy. "
-            "5. Use '[[Topic]]' syntax for pseudo-links to other funny topics."
+            "1. The very first line must be the title of the article, starting with '# ' (e.g., '# Title'). "
+            "2. Immediately follow the title with a Markdown table representing a Wikipedia infobox (key-value pairs). "
+            "3. Summary. "
+            "4. Origin/History. "
+            "5. Controversy. "
+            "6. Use '[[Topic]]' syntax for pseudo-links to other funny topics."
         )
 
         if image_file and image_file.filename != '':
@@ -92,6 +93,10 @@ def search():
             image_prompt_text = "A funny parody image based on this uploaded image" # Fallback for generation
         else:
             # Text search
+            # Fallback if query is missing to avoid "None" articles
+            if not query:
+                query = "The Void"
+
             full_prompt = f"{structure_prompt} The topic is: {query}"
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
@@ -115,6 +120,7 @@ def search():
             # 2. Generate Image (Imagen)
             generated_image_b64 = None
             try:
+                # Attempt to use Imagen 3. Note: This requires the account to have access to the model.
                 image_response = client.models.generate_images(
                     model='imagen-3.0-generate-001',
                     prompt=image_prompt_text,
@@ -126,7 +132,8 @@ def search():
                     img_bytes = image_response.generated_images[0].image.image_bytes
                     generated_image_b64 = base64.b64encode(img_bytes).decode('utf-8')
             except Exception as img_err:
-                print(f"Image generation failed: {img_err}")
+                # detailed logging for the user to debug
+                print(f"Image generation failed: {img_err}. Note: 'imagen-3.0-generate-001' might not be enabled for this API key.")
                 # Non-blocking failure, just no image
 
             # 3. Process Wiki-Links [[Topic]] -> <a href="/search?q=Topic">Topic</a>
