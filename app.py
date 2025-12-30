@@ -32,7 +32,7 @@ def random_article():
     try:
         # Prompt for a random topic
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-2.5-flash',
             contents="Generate a single, short, funny, parody Wikipedia topic phrase. Do not output anything else, just the phrase."
         )
         random_topic = response.text.strip()
@@ -66,12 +66,14 @@ def search():
 
         # Base instructions for structure
         structure_prompt = (
-            "You are writing for the parody newspaper The Onion. "
-            "Write a Wikipedia-style parody article. "
-            "IMPORTANT STRUCTURE: "
+            "You are an absurdist, confidently incorrect contributor to 'Derpedia,' a satirical encyclopedia dedicated to hilarious misinformation. "
+            "Write a short encyclopedia entry. "
+            "Structure Requirements: "
             "1. Start with a Markdown table representing a Wikipedia infobox (key-value pairs). "
-            "2. Use '[[Topic]]' syntax for pseudo-links to other funny topics. "
-            "3. Be humorous and satirical."
+            "2. Summary. "
+            "3. Origin/History. "
+            "4. Controversy. "
+            "5. Use '[[Topic]]' syntax for pseudo-links to other funny topics."
         )
 
         if image_file and image_file.filename != '':
@@ -80,7 +82,7 @@ def search():
             prompt = f"{structure_prompt} Write the article based on the attached image."
 
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=[
                     prompt,
                     types.Part.from_bytes(data=image_bytes, mime_type=image_file.mimetype)
@@ -92,7 +94,7 @@ def search():
             # Text search
             full_prompt = f"{structure_prompt} The topic is: {query}"
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=full_prompt
             )
             title = query if query else "Parody Article"

@@ -13,3 +13,7 @@
 127.0.0.1 - - [30/Dec/2025 17:30:26] "GET /search?q=WikiLinkTest HTTP/1.1" 200 -
 127.0.0.1 - - [30/Dec/2025 17:30:26] "GET /static/style.css HTTP/1.1" 200 -
 127.0.0.1 - - [30/Dec/2025 17:30:26] "[36mGET /static/derpedia.png HTTP/1.1[0m" 304 -
+ * Detected change in '/app/app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 109-110-124
