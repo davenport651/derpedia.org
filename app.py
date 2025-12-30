@@ -2,7 +2,8 @@ import os
 import markdown
 import io
 import base64
-from flask import Flask, render_template, request
+import re
+from flask import Flask, render_template, request, redirect, url_for
 from google import genai
 from google.genai import types
 
@@ -23,14 +24,39 @@ else:
 def index():
     return render_template('index.html')
 
-@app.route('/search', methods=['POST'])
+@app.route('/random')
+def random_article():
+    if not API_KEY:
+         return redirect(url_for('search', q="Configuration Error"))
+
+    try:
+        # Prompt for a random topic
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents="Generate a single, short, funny, parody Wikipedia topic phrase. Do not output anything else, just the phrase."
+        )
+        random_topic = response.text.strip()
+        # Redirect to search with this topic
+        return redirect(url_for('search', q=random_topic))
+    except Exception as e:
+        return redirect(url_for('search', q="Error generating random topic"))
+
+
+@app.route('/search', methods=['POST', 'GET'])
 def search():
-    query = request.form.get('q')
-    image_file = request.files.get('image')
+    if request.method == 'POST':
+        query = request.form.get('q')
+        image_file = request.files.get('image')
+        # Check for "I'm Feeling Derpy" button press if it was a named submit button
+        if 'derpy' in request.form:
+             return redirect(url_for('random_article'))
+    else:
+        # GET request (from wiki-links or direct URL)
+        query = request.args.get('q')
+        image_file = None
 
     if not API_KEY:
-        # Graceful handling for missing API key
-        content_md = "# API Key Missing\n\nPlease set the `GEMINI_API_KEY` environment variable or edit `app.py`. You can obtain one from Google AI Studio."
+        content_md = "# API Key Missing\n\nPlease set the `GEMINI_API_KEY` environment variable or edit `app.py`."
         content_html = markdown.markdown(content_md)
         return render_template('article.html', title="Configuration Error", content=content_html)
 
@@ -38,42 +64,100 @@ def search():
         response_text = ""
         title = "Parody Article"
 
+        # Base instructions for structure
+        structure_prompt = (
+            "You are writing for the parody newspaper The Onion. "
+            "Write a Wikipedia-style parody article. "
+            "IMPORTANT STRUCTURE: "
+            "1. Start with a Markdown table representing a Wikipedia infobox (key-value pairs). "
+            "2. Use '[[Topic]]' syntax for pseudo-links to other funny topics. "
+            "3. Be humorous and satirical."
+        )
+
         if image_file and image_file.filename != '':
             # Image search
             image_bytes = image_file.read()
-            #prompt = "write a parody article in the style of wikipedia on the topic shown in the attached image"
-            prompt = "You are an absurdist, confidently incorrect contributor to 'Derpedia,' a satirical encyclopedia dedicated to hilarious misinformation. Write a short encyclopedia entry for the topic shown in the attached image. Structure Requirements: Summary; Origin/History; Controversy"
+            prompt = f"{structure_prompt} Write the article based on the attached image."
+
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-2.0-flash',
                 contents=[
                     prompt,
                     types.Part.from_bytes(data=image_bytes, mime_type=image_file.mimetype)
                 ]
             )
             title = "Image Search Result"
+            image_prompt_text = "A funny parody image based on this uploaded image" # Fallback for generation
         else:
             # Text search
-            full_prompt = f"You are an absurdist, confidently incorrect contributor to 'Derpedia,' a satirical encyclopedia dedicated to hilarious misinformation. Write a short encyclopedia entry for the topic: '{query}'. Structure Requirements: Summary; Origin/History; Controversy"
+            full_prompt = f"{structure_prompt} The topic is: {query}"
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-2.0-flash',
                 contents=full_prompt
             )
             title = query if query else "Parody Article"
+            image_prompt_text = f"A low resolution, funny parody image for a Wikipedia article about {query}"
 
+        content_md = ""
         if response.text:
             content_md = response.text
-            # Naive title extraction if the model puts it in the first line
+
+            # 1. Extract Title
             if content_md.startswith("# "):
                 lines = content_md.split('\n')
                 candidate_title = lines[0].replace("# ", "").strip()
-                # if the title seems reasonable (not too long), use it
                 if len(candidate_title) < 100:
                     title = candidate_title
                     content_md = "\n".join(lines[1:])
 
-            content_html = markdown.markdown(content_md)
+            # 2. Generate Image (Imagen)
+            generated_image_b64 = None
+            try:
+                image_response = client.models.generate_images(
+                    model='imagen-3.0-generate-001',
+                    prompt=image_prompt_text,
+                    config=types.GenerateImagesConfig(
+                        number_of_images=1,
+                    )
+                )
+                if image_response.generated_images:
+                    img_bytes = image_response.generated_images[0].image.image_bytes
+                    generated_image_b64 = base64.b64encode(img_bytes).decode('utf-8')
+            except Exception as img_err:
+                print(f"Image generation failed: {img_err}")
+                # Non-blocking failure, just no image
+
+            # 3. Process Wiki-Links [[Topic]] -> <a href="/search?q=Topic">Topic</a>
+            # We use a regex to replace [[...]] with links
+            def replace_link(match):
+                text = match.group(1)
+                return f'<a href="{url_for("search", q=text)}">{text}</a>'
+
+            content_md = re.sub(r'\[\[(.*?)\]\]', replace_link, content_md)
+
+            # 4. Render Markdown
+            content_html = markdown.markdown(content_md, extensions=['tables'])
+
+            # 5. Inject Generated Image into the Infobox (if present) or at the top
+            if generated_image_b64:
+                img_tag = f'<div class="infobox-image"><img src="data:image/png;base64,{generated_image_b64}" alt="{title}"></div>'
+                # Attempt to inject into the first table cell if it looks like an infobox
+                # This is a bit hacky on HTML string, but standard markdown tables render as <table>...
+                if "<table>" in content_html:
+                    # Insert before the table closes or at start?
+                    # Actually, standard Wikipedia infoboxes have images at the top.
+                    # Let's try to prepend it to the table if we can find it.
+                    # Or simpler: Just wrap the table in a div and put the image there?
+                    # Let's rely on CSS. We will pass the image separately or inject it.
+                    # Injecting into the HTML string before the table:
+                    content_html = content_html.replace('<table>', f'<div class="infobox-container">{img_tag}<table>', 1).replace('</table>', '</table></div>', 1)
+                else:
+                    # Fallback: float right image
+                    content_html = f'<div class="infobox-container">{img_tag}</div>' + content_html
+
         else:
              content_html = "<p>No content generated.</p>"
+             generated_image_b64 = None
 
         return render_template('article.html', title=title, content=content_html)
 

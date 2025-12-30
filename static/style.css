@@ -96,12 +96,47 @@ a:hover {
 }
 
 /* Infobox mimic (simple) */
-table {
-    border-collapse: collapse;
-    margin: 1em 0;
+/* The container wrapping the image and the table */
+.infobox-container {
+    float: right;
+    clear: right;
+    width: 300px;
+    margin: 0 0 1em 1em;
+    border: 1px solid #a2a9b1;
+    background-color: #f8f9fa;
+    padding: 5px;
+    font-size: 90%;
+    line-height: 1.5em;
 }
 
-th, td {
-    border: 1px solid #a2a9b1;
+/* Ensure the table inside fits well */
+.infobox-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background-color: transparent;
+    border: none;
+}
+
+.infobox-container th, .infobox-container td {
+    border: none;
     padding: 0.2em 0.4em;
+    text-align: left;
+    vertical-align: top;
+}
+
+.infobox-container th {
+    font-weight: bold;
+}
+
+/* Image inside infobox */
+.infobox-image {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.infobox-image img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
 }
