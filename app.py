@@ -3,11 +3,15 @@ import markdown
 import io
 import base64
 import re
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from google import genai
 from google.genai import types
+import database
 
 app = Flask(__name__)
+
+# Initialize DB
+database.init_db()
 
 # --- CONFIGURATION ---
 # TODO: Enter your Gemini API Key here or set the GEMINI_API_KEY environment variable.
@@ -21,12 +25,47 @@ if API_KEY:
 else:
     client = None
 
+def check_reality(query_text):
+    """
+    Asks the AI nicely if the user is making things up.
+    Returns: True (It's real), False (It's fake/gibberish)
+    """
+    if not API_KEY:
+        return True # Fail open if no key
+
+    try:
+        # Use the cheap/fast model for this check
+        prompt = f"""
+        You are a reality checker. content_check: '{query_text}'
+        Does this concept/person/thing likely exist in the real world or pop culture?
+        If it is total gibberish (like 'asdfjkl') or completely made up by a user smashing keys, reply NO.
+        If it is a real thing, a misspelling of a real thing, or a fictional concept (like 'Unicorn'), reply YES.
+        Reply ONLY with 'YES' or 'NO'.
+        """
+        response = client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=prompt
+        )
+        answer = response.text.strip().upper()
+
+        return "YES" in answer
+    except Exception as e:
+        print(f"Reality check failed: {e}")
+        # If the check fails (API error), assume it's real so we don't block users unnecessarily
+        return True
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/random')
 def random_article():
+    # Try to get from DB first
+    article = database.get_random_article()
+    if article:
+        return redirect(url_for('search', q=article['query']))
+
+    # Fallback to API generation if DB is empty
     if not API_KEY:
          return redirect(url_for('search', q="Configuration Error"))
 
@@ -42,6 +81,15 @@ def random_article():
     except Exception as e:
         return redirect(url_for('search', q="Error generating random topic"))
 
+@app.route('/report/<int:article_id>', methods=['POST'])
+def report_article(article_id):
+    database.mark_stale(article_id)
+    return jsonify({"success": True})
+
+@app.route('/recent')
+def recent_articles():
+    articles = database.get_recent_articles()
+    return render_template('recent.html', articles=articles)
 
 @app.route('/search', methods=['POST', 'GET'])
 def search():
@@ -56,10 +104,24 @@ def search():
         query = request.args.get('q')
         image_file = None
 
+    if not query:
+        query = "The Void"
+
+    # --- 1. Check Database (only for text queries) ---
+    if not image_file:
+        existing_article = database.get_article(query)
+        if existing_article and not existing_article['is_stale']:
+            return render_template_article(existing_article['title'], existing_article['content_md'], existing_article['image_b64'], existing_article['id'])
+
     if not API_KEY:
         content_md = "# API Key Missing\n\nPlease set the `GEMINI_API_KEY` environment variable or edit `app.py`."
         content_html = markdown.markdown(content_md)
         return render_template('article.html', title="Configuration Error", content=content_html)
+
+    # --- 2. Reality Check (only for text queries) ---
+    if not image_file:
+        if not check_reality(query):
+            return render_template('651.html', query=query), 651
 
     try:
         response_text = ""
@@ -94,10 +156,6 @@ def search():
             image_prompt_text = "A funny parody image based on this uploaded image" # Fallback for generation
         else:
             # Text search
-            # Fallback if query is missing to avoid "None" articles
-            if not query:
-                query = "The Void"
-
             full_prompt = f"{structure_prompt} The topic is: {query}"
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
@@ -107,6 +165,8 @@ def search():
             image_prompt_text = f"A low resolution, funny parody image for a Wikipedia article about {query}"
 
         content_md = ""
+        generated_image_b64 = None
+
         if response.text:
             content_md = response.text
 
@@ -119,7 +179,6 @@ def search():
                     content_md = "\n".join(lines[1:])
 
             # 2. Generate Image (Imagen)
-            generated_image_b64 = None
             try:
                 # Attempt to use Imagen 3. Note: This requires the account to have access to the model.
                 image_response = client.models.generate_images(
@@ -138,42 +197,55 @@ def search():
                 print(f"Image generation failed: {img_err}. Note: 'imagen-3.0-generate-001' might not be enabled for this API key.")
                 # Non-blocking failure, just no image
 
-            # 3. Process Wiki-Links [[Topic]] -> <a href="/search?q=Topic">Topic</a>
-            # We use a regex to replace [[...]] with links
-            def replace_link(match):
-                text = match.group(1)
-                return f'<a href="{url_for("search", q=text)}">{text}</a>'
+            # Save to Database (only text queries)
+            if not image_file:
+                database.add_article(query, title, content_md, generated_image_b64)
 
-            content_md = re.sub(r'\[\[(.*?)\]\]', replace_link, content_md)
+            # Fetch back from DB to get ID or just render directly
+            # To be efficient, we can just use the data we have.
+            # But we need the ID for the report button.
+            # If we just saved it, we can fetch it.
+            if not image_file:
+                 saved_article = database.get_article(query)
+                 if saved_article:
+                     return render_template_article(saved_article['title'], saved_article['content_md'], saved_article['image_b64'], saved_article['id'])
 
-            # 4. Render Markdown
-            content_html = markdown.markdown(content_md, extensions=['tables'])
-
-            # 5. Inject Generated Image into the Infobox (if present) or at the top
-            if generated_image_b64:
-                img_tag = f'<div class="infobox-image"><img src="data:image/png;base64,{generated_image_b64}" alt="{title}"></div>'
-                # Attempt to inject into the first table cell if it looks like an infobox
-                # This is a bit hacky on HTML string, but standard markdown tables render as <table>...
-                if "<table>" in content_html:
-                    # Insert before the table closes or at start?
-                    # Actually, standard Wikipedia infoboxes have images at the top.
-                    # Let's try to prepend it to the table if we can find it.
-                    # Or simpler: Just wrap the table in a div and put the image there?
-                    # Let's rely on CSS. We will pass the image separately or inject it.
-                    # Injecting into the HTML string before the table:
-                    content_html = content_html.replace('<table>', f'<div class="infobox-container">{img_tag}<table>', 1).replace('</table>', '</table></div>', 1)
-                else:
-                    # Fallback: float right image
-                    content_html = f'<div class="infobox-container">{img_tag}</div>' + content_html
+            # Fallback for image searches or DB failures
+            return render_template_article(title, content_md, generated_image_b64, None)
 
         else:
              content_html = "<p>No content generated.</p>"
-             generated_image_b64 = None
-
-        return render_template('article.html', title=title, content=content_html)
+             return render_template('article.html', title=title, content=content_html)
 
     except Exception as e:
         return render_template('article.html', title="Error", content=f"<p>An error occurred: {str(e)}</p>")
+
+def render_template_article(title, content_md, image_b64, article_id):
+    # 3. Process Wiki-Links [[Topic]] -> <a href="/search?q=Topic">Topic</a>
+    # We use a regex to replace [[...]] with links
+    def replace_link(match):
+        text = match.group(1)
+        return f'<a href="{url_for("search", q=text)}">{text}</a>'
+
+    content_md = re.sub(r'\[\[(.*?)\]\]', replace_link, content_md)
+
+    # 4. Render Markdown
+    content_html = markdown.markdown(content_md, extensions=['tables'])
+
+    # 5. Inject Generated Image into the Infobox (if present) or at the top
+    if image_b64:
+        img_tag = f'<div class="infobox-image"><img src="data:image/png;base64,{image_b64}" alt="{title}"></div>'
+        # Attempt to inject into the first table cell if it looks like an infobox
+        # This is a bit hacky on HTML string, but standard markdown tables render as <table>...
+        if "<table>" in content_html:
+            # Injecting into the HTML string before the table:
+            content_html = content_html.replace('<table>', f'<div class="infobox-container">{img_tag}<table>', 1).replace('</table>', '</table></div>', 1)
+        else:
+            # Fallback: float right image
+            content_html = f'<div class="infobox-container">{img_tag}</div>' + content_html
+
+    return render_template('article.html', title=title, content=content_html, article_id=article_id)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

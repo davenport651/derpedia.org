@@ -18,16 +18,39 @@
                 <li><a href="#">Contents</a></li>
                 <li><a href="#">Current events</a></li>
                 <li><a href="/random">Random article</a></li>
+                <li><a href="/recent">Recently Derp'd</a></li>
                 <li><a href="#">About Derpedia</a></li>
             </ul>
         </div>
         <div class="wiki-main">
             <h1 class="firstHeading">{{ title }}</h1>
             <div class="siteSub">From Derpedia, the free encyclopedia</div>
+
+            {% if article_id %}
+            <div style="float: right; margin-bottom: 10px;">
+                <button id="reportBtn" onclick="reportArticle({{ article_id }})" style="background: #f8f9fa; border: 1px solid #a2a9b1; padding: 5px 10px; cursor: pointer; font-size: 0.8em;">Report / Flag for Update</button>
+            </div>
+            {% endif %}
+
             <div class="mw-content-ltr">
                 {{ content | safe }}
             </div>
         </div>
     </div>
+
+    <script>
+        function reportArticle(id) {
+            fetch('/report/' + id, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    const btn = document.getElementById('reportBtn');
+                    btn.disabled = true;
+                    btn.innerText = "Flagged for Update";
+                }
+            })
+            .catch(err => console.error(err));
+        }
+    </script>
 </body>
 </html>
