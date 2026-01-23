@@ -43,7 +43,7 @@ def check_reality(query_text):
         Reply ONLY with 'YES' or 'NO'.
         """
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=prompt
         )
         answer = response.text.strip().upper()
@@ -146,7 +146,7 @@ def search():
             prompt = f"{structure_prompt} Write the article based on the attached image."
 
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-2.5-pro',
                 contents=[
                     prompt,
                     types.Part.from_bytes(data=image_bytes, mime_type=image_file.mimetype)
