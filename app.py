@@ -43,7 +43,7 @@ def check_reality(query_text):
         Reply ONLY with 'YES' or 'NO'.
         """
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=prompt
         )
         answer = response.text.strip().upper()
@@ -72,7 +72,7 @@ def random_article():
     try:
         # Prompt for a random topic
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-pro',
             contents="Generate a single, short, funny, parody Wikipedia topic phrase. Do not output anything else, just the phrase."
         )
         random_topic = response.text.strip()
@@ -90,6 +90,10 @@ def report_article(article_id):
 def recent_articles():
     articles = database.get_recent_articles()
     return render_template('recent.html', articles=articles)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 @app.route('/search', methods=['POST', 'GET'])
 def search():
