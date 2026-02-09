@@ -6,7 +6,11 @@ import re
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
 import database
+
+# Load variables from .env file into os.environ
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -24,6 +28,7 @@ if API_KEY:
     client = genai.Client(api_key=API_KEY)
 else:
     client = None
+    print("Warning: GEMINI_API_KEY not found in .env file.")
 
 def check_reality(query_text):
     """
@@ -110,6 +115,8 @@ def search():
 
     if not query:
         query = "The Void"
+    else:
+        query = query.strip()
 
     # --- 1. Check Database (only for text queries) ---
     if not image_file:
@@ -165,8 +172,10 @@ def search():
                 model='gemini-2.5-flash',
                 contents=full_prompt
             )
-            title = query if query else "Parody Article"
-            image_prompt_text = f"A low resolution, funny parody image for a Wikipedia article about {query}"
+            #title = query if query else "Parody Article"
+            # Force Title Case for the default title (e.g. "dogzilla" -> "Dogzilla")
+            title = query.title() if query else "Parody Article"
+            image_prompt_text = f"A low resolution, photo for a Wikipedia parody article about {query}"
 
         content_md = ""
         generated_image_b64 = None
@@ -184,9 +193,9 @@ def search():
 
             # 2. Generate Image (Imagen)
             try:
-                # Attempt to use Imagen 3. Note: This requires the account to have access to the model.
+                # Attempt to use Imagen 4. Note: This requires the account to have access to the model.
                 image_response = client.models.generate_images(
-                    #model='gemini-2.0-flash-exp-image-generation',
+                    #model='gemini-2.0-flash-exp-image-generation', #alternative model; needs code development
                     model='imagen-4.0-fast-generate-001',
                     prompt=image_prompt_text,
                     config=types.GenerateImagesConfig(
@@ -198,7 +207,7 @@ def search():
                     generated_image_b64 = base64.b64encode(img_bytes).decode('utf-8')
             except Exception as img_err:
                 # detailed logging for the user to debug
-                print(f"Image generation failed: {img_err}. Note: 'imagen-3.0-generate-001' might not be enabled for this API key.")
+                print(f"Image generation failed: {img_err}. Note: 'imagen-4.0-fast-generate-001' might not be enabled for this API key.")
                 # Non-blocking failure, just no image
 
             # Save to Database (only text queries)

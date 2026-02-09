@@ -13,10 +13,11 @@ Derpedia is a parody Wikipedia application that generates humorous articles usin
 
 - Python 3.8+
 - A Google Gemini API Key (Get one from [Google AI Studio](https://aistudio.google.com/app/apikey))
+- The API key needs access to gemini-2.5-flash & imagen-4.0-fast-generate-001. At the time of this writing, this required a credit card.
 
 ## Installation & Deployment
 
-Follow these steps to deploy Derpedia to your server (e.g., at `/var/www/derpedia.parody/`).
+Follow these steps to deploy Derpedia to your server (e.g., at `/var/www/derpedia-clone.tld/`).
 
 ### 1. Clone the Repository
 
@@ -24,8 +25,8 @@ Navigate to your web directory and clone the project:
 
 ```bash
 cd /var/www/
-sudo git clone <YOUR_REPO_URL> derpedia.parody
-cd derpedia.parody
+sudo git clone <YOUR_REPO_URL> derpedia-clone.tld
+cd derpedia-clone.tld
 ```
 
 ### 2. Set Up a Virtual Environment
@@ -59,7 +60,7 @@ export GEMINI_API_KEY="your_actual_api_key_here"
 ```
 
 **For a permanent setup (e.g., in a systemd service or .env file):**
-Ensure the variable is available to the process running the application.
+Ensure the variable is available to the process running the application. In a .env file, write above command without "export".
 
 ### 5. Run the Application
 
@@ -70,6 +71,8 @@ To check if everything is working:
 python app.py
 ```
 The site will be available at `http://127.0.0.1:5000`.
+
+If derpedia.db file does not exist, the sqlite database file will be created and initialized on first run.
 
 **Production Mode (Recommended):**
 For a production environment, use a WSGI server like `gunicorn`.
@@ -87,6 +90,41 @@ For a production environment, use a WSGI server like `gunicorn`.
 ## Project Structure
 
 - `app.py`: The Flask backend application.
+- `database.py`: The database backend application.
 - `static/`: Contains CSS, JavaScript, and images.
 - `templates/`: Contains HTML templates.
 - `requirements.txt`: Python dependencies.
+
+## Additional Features
+
+### Direct URL Queries
+You can search Derpedia directly via URL parameters, making it possible to set Derpedia as a custom search engine in your browser. The format is:
+```
+https://derpedia.org/search?q={query}
+```
+
+For example: `https://derpedia.org/search?q=cats`
+
+**To add Derpedia as a custom search engine in your browser:**
+- **Chrome/Edge:** Settings → Search engine → Manage search engines → Add
+- **Firefox:** Right-click the search box on the Derpedia home page → "Add a Keyword for this Search"
+
+Use the URL pattern: `https://derpedia.org/search?q=%s` (where `%s` is your search term)
+
+### Random Article
+Click the **"I'm Feeling Derpy"** button on the home page or visit `/random` to be redirected to a randomly generated parody topic. If the database has cached articles, it will select one at random; otherwise, it will ask the AI to generate a new random topic.
+
+### Recent Articles
+Visit `/recent` to see the 5 most recently generated articles. This is a quick way to browse what's been created.
+
+### About Page
+The `/about` endpoint provides information about Derpedia and answers the question, "Who would do such a thing?"
+
+### Reality Check (HTTP 651)
+Derpedia includes a "reality check" feature that uses AI to detect if a search query is complete gibberish (e.g., random key-mashing like "asdfjkl"). If the query fails this check, you'll receive a custom HTTP 651 error page instead of generating a nonsensical article. The goal was to limit trolling that would eat the database disk, but it's probably not going to help much.
+
+### Article Caching
+Derpedia uses a SQLite database to cache generated articles. When you search for a topic, the article is saved and will be instantly retrieved on subsequent searches for the same topic. This reduces API calls, provides consistent results, and makes articles sharable. Maybe we'll generate something viral and I'll be able to retire early.
+
+### Report Stale Articles
+Each article page includes a report button that allows users to mark articles as "stale" via the `/report/<article_id>` endpoint. Stale articles are excluded from random article selection and the recent articles list, though they remain accessible via direct search. On the next search for that phrase, the article and image will be regenerated.

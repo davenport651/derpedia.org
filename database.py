@@ -27,38 +27,58 @@ def init_db():
 
 def get_article(query):
     conn = get_db_connection()
-    article = conn.execute('SELECT * FROM articles WHERE query = ?', (query,)).fetchone()
-    conn.close()
-    return article
+    
+    # 1. Try Exact Match (Ignoring Case)
+    # This solves the "Dogzilla" vs "dogzilla" issue
+    article = conn.execute(
+        'SELECT * FROM articles WHERE LOWER(query) = LOWER(?)', 
+        (query,)
+    ).fetchone()
 
-def get_article_by_id(article_id):
-    conn = get_db_connection()
-    article = conn.execute('SELECT * FROM articles WHERE id = ?', (article_id,)).fetchone()
+    # 2. If not found, Try Fuzzy Match on Title
+    # This solves the "DDR4" finding "DDR4 (Double Dash...)"
+    if not article:
+        article = conn.execute(
+            'SELECT * FROM articles WHERE LOWER(title) LIKE LOWER(?)', 
+            (f'%{query}%',)
+        ).fetchone()
+
     conn.close()
     return article
 
 def add_article(query, title, content_md, image_b64):
     conn = get_db_connection()
     try:
-        # Check if exists to determine insert or update
-        existing = conn.execute('SELECT id FROM articles WHERE query = ?', (query,)).fetchone()
+        # Check if exists (Ignoring Case) so we don't create duplicates
+        existing = conn.execute(
+            'SELECT id FROM articles WHERE LOWER(query) = LOWER(?)', 
+            (query,)
+        ).fetchone()
+
         if existing:
+            # Update existing entry
             conn.execute('''
                 UPDATE articles
                 SET title = ?, content_md = ?, image_b64 = ?, created_at = ?, is_stale = 0
-                WHERE query = ?
-            ''', (title, content_md, image_b64, datetime.datetime.now(), query))
+                WHERE id = ?
+            ''', (title, content_md, image_b64, datetime.datetime.now(), existing['id']))
         else:
+            # Insert new entry
             conn.execute('''
                 INSERT INTO articles (query, title, content_md, image_b64, created_at, is_stale)
                 VALUES (?, ?, ?, ?, ?, 0)
             ''', (query, title, content_md, image_b64, datetime.datetime.now()))
         conn.commit()
     except sqlite3.IntegrityError:
-        # Should be handled by the update logic above, but safety first
         pass
     finally:
         conn.close()
+
+def get_article_by_id(article_id):
+    conn = get_db_connection()
+    article = conn.execute('SELECT * FROM articles WHERE id = ?', (article_id,)).fetchone()
+    conn.close()
+    return article
 
 def mark_stale(article_id):
     conn = get_db_connection()
