@@ -25,7 +25,7 @@ Navigate to your web directory and clone the project:
 
 ```bash
 cd /var/www/
-sudo git clone <YOUR_REPO_URL> derpedia-clone.tld
+sudo git clone https://github.com/davenport651/derpedia.org.git derpedia-clone.tld
 cd derpedia-clone.tld
 ```
 
