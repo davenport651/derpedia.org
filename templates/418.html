@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 418: I'm a Teapot (And So Are You)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=VT323&family=Courier+Prime:wght@400;700&display=swap');
+
+        :root {
+            --red: #d32f2f;
+            --dark: #1a1a1a;
+            --off-white: #f0ede6;
+            --paper: #faf8f3;
+            --ink: #1c1c1c;
+            --yellow-highlight: #fff9c4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--off-white);
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 27px,
+                    rgba(180, 200, 230, 0.3) 27px,
+                    rgba(180, 200, 230, 0.3) 28px
+                );
+            font-family: "Courier Prime", "Courier New", Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .rejection-form {
+            background: var(--paper);
+            padding: 3rem 3.5rem;
+            border: 2px solid #555;
+            max-width: 720px;
+            width: 100%;
+            box-shadow: 12px 12px 0px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        /* Fake paper fold top-right corner */
+        .rejection-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-style: solid;
+            border-width: 0 28px 28px 0;
+            border-color: transparent var(--off-white) transparent transparent;
+            filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.15));
+        }
+
+        .stamp {
+            position: absolute;
+            top: 24px;
+            right: 40px;
+            color: var(--red);
+            border: 5px solid var(--red);
+            padding: 8px 14px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            transform: rotate(-12deg);
+            opacity: 0.75;
+            text-transform: uppercase;
+            font-family: 'Special Elite', cursive;
+            letter-spacing: 3px;
+            text-shadow: 1px 1px 0 rgba(211, 47, 47, 0.4);
+            animation: stamp-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.5s both;
+        }
+
+        @keyframes stamp-in {
+            from { transform: rotate(-12deg) scale(3); opacity: 0; }
+            to   { transform: rotate(-12deg) scale(1); opacity: 0.75; }
+        }
+
+        .form-header {
+            margin-bottom: 1.5rem;
+            border-bottom: 3px double #333;
+            padding-bottom: 1rem;
+        }
+
+        .form-header .doc-id {
+            font-size: 0.75rem;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            font-family: 'Special Elite', cursive;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .status-block {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 2rem;
+            margin: 1.2rem 0;
+            font-size: 0.9rem;
+        }
+
+        .status-block p strong {
+            display: inline-block;
+            min-width: 100px;
+        }
+
+        .status-block .highlight {
+            background: var(--yellow-highlight);
+            padding: 1px 4px;
+        }
+
+        .teapot-img-wrapper {
+            margin: 1.5rem 0;
+            border: 2px solid #ccc;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            /* Slight rotation for "filed document" effect */
+            box-shadow: inset 0 0 0 4px #111, 4px 4px 0 #999;
+        }
+
+        .teapot-img-wrapper img {
+            display: block;
+            width: 100%;
+            max-height: 380px;
+            object-fit: cover;
+            object-position: center top;
+            opacity: 0.92;
+            filter: saturate(0.85) contrast(1.1);
+        }
+
+        .img-caption {
+            background: var(--dark);
+            color: #ccc;
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 5px 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'VT323', monospace;
+            font-size: 0.95rem;
+        }
+
+        .section-heading {
+            font-family: 'Special Elite', cursive;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 1.5rem 0 0.5rem 0;
+            border-bottom: 1px solid #bbb;
+            padding-bottom: 4px;
+        }
+
+        p {
+            font-size: 0.92rem;
+            line-height: 1.65;
+            margin-bottom: 0.9rem;
+            color: var(--ink);
+        }
+
+        .options {
+            margin: 1rem 0 1rem 1.2rem;
+            list-style: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin-bottom: 0.9rem;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .options li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            top: 1px;
+            color: #555;
+        }
+
+        blockquote {
+            border-left: 4px solid #bbb;
+            padding: 0.6rem 1rem;
+            margin: 1rem 0;
+            background: rgba(0,0,0,0.03);
+            font-style: italic;
+            font-size: 0.88rem;
+            color: #444;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: #777;
+            font-style: normal;
+        }
+
+        .derpedia-verdict {
+            background: #fff0f0;
+            border: 1.5px solid #d32f2f;
+            padding: 1rem 1.2rem;
+            margin: 1.5rem 0;
+            font-size: 0.88rem;
+        }
+
+        .derpedia-verdict .verdict-header {
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            color: var(--red);
+            margin-bottom: 0.4rem;
+        }
+
+        .key-data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem 1rem;
+            font-size: 0.85rem;
+            margin: 0.8rem 0;
+        }
+
+        .key-data-grid .kd-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .key-data-grid .kd-value {
+            color: var(--ink);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-try-harder {
+            background-color: #333;
+            color: white;
+            padding: 14px 22px;
+            text-decoration: none;
+            font-weight: bold;
+            font-family: "Courier Prime", monospace;
+            display: inline-block;
+            border: 2px solid transparent;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            transition: all 0.15s;
+        }
+
+        .btn-try-harder:hover {
+            background-color: white;
+            color: black;
+            border-color: black;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #555;
+            border: 2px solid #999;
+            padding: 14px 22px;
+            text-decoration: none;
+            font-family: "Courier Prime", monospace;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+
+        .btn-secondary:hover {
+            color: var(--red);
+            border-color: var(--red);
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #ccc;
+            font-size: 0.75rem;
+            color: #999;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .redacted {
+            background: #1c1c1c;
+            color: transparent;
+            user-select: none;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .teapot-icon {
+            font-size: 1.4rem;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        code {
+            background: #eee;
+            padding: 1px 5px;
+            font-size: 0.85em;
+            border: 1px solid #ccc;
+        }
+
+        .over9000 {
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            color: var(--red);
+        }
+    </style>
+</head>
+<body>
+    <div class="rejection-form">
+
+        <div class="stamp">REJECTED</div>
+
+        <div class="form-header">
+            <div class="doc-id">DERPEDIA.ORG &nbsp;|&nbsp; INCIDENT REPORT #418 &nbsp;|&nbsp; CLASSIFIED: EMBARRASSING</div>
+            <h1><span class="teapot-icon">🫖</span> Error 418: I'm a Teapot &mdash; And So Are You</h1>
+        </div>
+
+        <div class="status-block">
+            <p><strong>Status Code:</strong> <span class="highlight">418 (Teapot Detected)</span></p>
+            <p><strong>RFC Status:</strong> <span class="highlight">RFC 2324 (Hyper Text Coffee Pot Control Protocol)</span></p>
+            <p><strong>Threat Level:</strong> <span class="highlight">NON-EXISTENT</span></p>
+            <p><strong>Attacker IQ:</strong> <span class="highlight">Error: Divide by Zero</span></p>
+        </div>
+
+        <div class="teapot-img-wrapper">
+            <img src="{{ url_for('static', filename='feelbadaboutyourself.png') }}"
+                 alt="WANTED: Alex 'Alert(1)' Doe — For Cyber-Crimes Against Sanity"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.background='#111';">
+            <div class="img-caption">
+                ⚠ &nbsp; Subject: Alex "{{ query }}" Doe &nbsp;|&nbsp; Status: Confused &nbsp;|&nbsp; Hygiene: Unconfirmed &nbsp; ⚠
+            </div>
+        </div>
+
+        <p>
+            Our servers have detected that your request was not, as you imagined, a devastating cyberattack. It was <code>{{ query }}</code>. The Derpedia mainframe &mdash; a system which has survived DDOS attempts, existential despair, and one very persistent Roomba &mdash; has formally <strong>refused to brew coffee</strong> on the grounds that <strong>you are a teapot</strong>.
+        </p>
+
+        <p>
+            Congratulations.
+        </p>
+
+        <div class="section-heading">§1 &mdash; Official Classification of the Incident</div>
+
+        <p>
+            Biologists at <strong>Derpedia University</strong> have identified your attack signature as belonging to <em>Homo alertus</em>, colloquially known as the <strong>Script Kiddie</strong> &mdash; a tragic, low-energy lifeform frequently observed attempting to "hack the Gibson" using tools sourced from a 2004 Arch Linux forum. You submitted <code>{{ query }}</code> into our input box, hoping &mdash; <em>praying</em> &mdash; to see some sign of divine hacker power that validates your existence.
+        </p>
+
+        <p>
+            While our server looked on with digital pity, you sat in a chair that hasn't seen sunlight since the Obama administration, believing that a successful injection would finally earn you an invitation to a shadowy hacker collective.
+        </p>
+
+        <p>
+            Instead, you were met with <strong>sanitized strings</strong> and a cold, calculated realization: you tried to pick a bank vault with a wet noodle. You tried to throw a pebble at a black hole. You tried to breach a teapot. <strong>The teapot won.</strong>
+        </p>
+
+        <p>
+            And the teapot in question? A <strong>PC that's old enough to have mined the Bitcoin Genesis Block</strong>, sitting on a shelf in someone's living room, wheezing through a fan that hasn't been cleaned since the Snowden era. It shares a power strip with a lava lamp and a router held together with a rubber band. It has 4GB of RAM, a blinking amber light that nobody has ever explained, and the thermal performance of a panini press. This machine is the technological equivalent of a 100-year-old geriatric patient on life support &mdash; <strong> and it <em>still</em> laughed at you</strong>.
+        </p>
+
+        <div class="section-heading">§2 &mdash; Field Notes: Anatomical Profile of the Perpetrator</div>
+
+        <div class="key-data-grid">
+            <span class="kd-label">Diet:</span>
+            <span class="kd-value">Flamin' Hot Cheetos and the tears of disappointed parents.</span>
+            <span class="kd-label">Special Move:</span>
+            <span class="kd-value">Copy-pasting code they don't understand into boxes that don't care.</span>
+            <span class="kd-label">Natural Enemy:</span>
+            <span class="kd-value"><code>htmlspecialchars()</code>, prepared statements, basic logic, and showers.</span>
+            <span class="kd-label">Delusion Level:</span>
+            <span class="kd-value"><span class="over9000">OVER 9000</span>. They believe we are "scared."</span>
+            <span class="kd-label">Last Seen:</span>
+            <span class="kd-value">Attempting to "hack" a toaster. The toaster also refused.</span>
+            <span class="kd-label">Reward:</span>
+            <span class="kd-value">A fresh shower and a conversation with a real human being.</span>
+        </div>
+
+        <div class="section-heading">§3 &mdash; Select One Reason For This Failure (For Your Records)</div>
+
+        <p>Our Truth-o-Meter 9000&trade; has processed your input and returned a value of <strong>FALSE</strong>. Your attack failed for one of the following reasons. Please check the box that makes you feel the most superior:</p>
+
+        <ul class="options">
+            <li><strong>The "Teapot" Theory:</strong> Our server is, per <a href="https://www.rfc-editor.org/rfc/rfc2324" style="color:inherit">RFC 2324</a>, a teapot. It cannot brew your l33t exploits. It can only brew Earl Grey, hot. You brought the wrong type of attack to a very small and ceramic server.</li>
+            <li><strong>The "Hipster" Theory:</strong> Modern input sanitization <em>is</em> real, but was apparently invented 5 minutes after you last checked the internet. Our AI is not "hacked." Our AI is bored.</li>
+            <li><strong>The "Gaslight" Theory:</strong> Your payload worked perfectly. We are currently executing <code>{{ query }}</code>, but your eyes are closed. You have won. You are a hacker. <em>(We are not. You are not. We executed <code>echo $l337H4X0RC0D3 > /dev/null</code>. Seek help.)</em></li>
+            <li><strong>The "Developer" Theory:</strong> The code works perfectly, but the universe is currently in a beta test and failed to load your self-respect. Please submit a bug report to your parents.</li>
+        </ul>
+
+        <div class="derpedia-verdict">
+            <div class="verdict-header">⚑ &nbsp; Official Derpedia Scientific Consensus &nbsp; ⚑</div>
+            <p style="margin-bottom:0;">
+                The <em>Homo alertus</em> is confirmed to be an <strong>evolutionary dead end</strong>. While the AI's inputs are thoroughly sanitized, the user's brain remains woefully cluttered with 4chan memes and <span class="redacted">unwashed laundry</span>. Their attempt to hack Derpedia has been logged under the category <strong>"Adorable,"</strong> filed adjacent to the folder labelled <strong>"Someone's First Day,"</strong> and commemorated with this very page, which will outlive us all.
+            </p>
+        </div>
+
+        <blockquote>
+            "I tried to hack Derpedia and all I got was this lousy feeling of inadequacy."
+            <cite>&mdash; Anonymous Script Kiddie, right before being grounded. Quoted in Derpedia, Vol. XII, pg. 418.</cite>
+        </blockquote>
+
+        <div class="section-heading">§4 &mdash; Recommended Next Steps for the Perpetrator</div>
+
+        <p>
+            Derpedia, in its boundless mercy, has prepared the following rehabilitation pathway for <em>Homo alertus</em>:
+        </p>
+
+        <ul class="options">
+            <li>Open a book. Any book. A physical one, if possible. The warmth of the pages may substitute for actual sunlight.</li>
+            <li>Learn what input sanitization and prepared statements actually do. They are the reason you are reading this page instead of causing any damage. Make peace with them. Frame them on your wall. They are better at their job than you are at yours.</li>
+            <li>Understand that "hacking" a public AI chatbot is not listed on any resume under <em>Skills</em>, except perhaps one submitted to the Derpedia Hall of Shame.</li>
+            <li>Consider, just briefly, touching grass. Our GIS team has confirmed it still exists in most regions.</li>
+        </ul>
+
+        <div class="btn-row">
+            <a href="/" class="btn-try-harder">Try Again (But Try Harder)</a>
+            <a href="{{ url_for('search', q='Script Kiddie') }}" class="btn-secondary">Read Your Own Article</a>
+            <a href="javascript:window.print()" class="btn-secondary">Display Your Shame</a>
+        </div>
+
+        <div class="footer-note">
+            DERPEDIA INCIDENT PROCESSING SYSTEM v4.18 &nbsp;|&nbsp;
+            DOCUMENT REF: <span class="redacted">TOP SECRET</span>-418 &nbsp;|&nbsp;
+            ALL ATTACKS LOGGED FOR POSTERITY AND LIGHT MOCKERY
+        </div>
+
+    </div>
+</body>
+</html>
