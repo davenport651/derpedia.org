@@ -13,7 +13,7 @@ class DerpediaTests(unittest.TestCase):
         self.app = app.test_client()
         self.app.testing = True
 
-    @patch('app.check_reality', return_value=True)
+    @patch('app.check_reality', return_value="YES")
     @patch('app.client')
     def test_title_extraction_success(self, mock_client, mock_check_reality):
         # Mock object that handles both text and image calls
@@ -33,7 +33,7 @@ class DerpediaTests(unittest.TestCase):
         # Check if title extraction worked
         self.assertIn(b"The Correct Title", response.data)
 
-    @patch('app.check_reality', return_value=True)
+    @patch('app.check_reality', return_value="YES")
     @patch('app.client')
     def test_title_extraction_fallback(self, mock_client, mock_check_reality):
         mock_response = MagicMock()
@@ -51,7 +51,7 @@ class DerpediaTests(unittest.TestCase):
         # Should fallback to query
         self.assertIn(b"My Query", response.data)
 
-    @patch('app.check_reality', return_value=True)
+    @patch('app.check_reality', return_value="YES")
     @patch('app.client')
     def test_query_none_fallback(self, mock_client, mock_check_reality):
         # Test the "The Void" fallback when q is empty
