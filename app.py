@@ -54,7 +54,10 @@ def check_reality(query_text):
         else:
             return "YES"
     except Exception as e:
-        print(f"Reality check failed: {e}")
+        error_str = str(e)
+        print(f"Reality check failed: {error_str}")
+        if "429" in error_str:
+            return "429"
         # If the check fails (API error), assume it's real so we don't block users unnecessarily
         return "YES"
 
@@ -83,6 +86,8 @@ def random_article():
         # Redirect to search with this topic
         return redirect(url_for('search', q=random_topic))
     except Exception as e:
+        if "429" in str(e):
+            return render_template('429.html'), 429
         return redirect(url_for('search', q="Error generating random topic"))
 
 @app.route('/report/<int:article_id>', methods=['POST'])
@@ -131,7 +136,9 @@ def search():
     # --- 2. Reality Check (only for text queries) ---
     if not image_file:
         reality_status = check_reality(query)
-        if reality_status == "ATTACK":
+        if reality_status == "429":
+            return render_template('429.html'), 429
+        elif reality_status == "ATTACK":
             # TODO: Future feature - "fail gallery"
             # TODO: Future feature - "fail photo" custom AI generated image
             return render_template('418.html', query=query), 418
@@ -235,6 +242,8 @@ def search():
              return render_template('article.html', title=title, content=content_html)
 
     except Exception as e:
+        if "429" in str(e):
+            return render_template('429.html'), 429
         return render_template('article.html', title="Error", content=f"<p>An error occurred: {str(e)}</p>")
 
 def render_template_article(title, content_md, image_b64, article_id):

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error 429: Cease & Desist</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Specific styles for the 429 page to look like a government form */
+        body.error-page {
+            background-color: #f0f0f0;
+            font-family: "Courier New", Courier, monospace; /* Typewriter look */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .rejection-form {
+            background: white;
+            padding: 3rem;
+            border: 2px solid #333;
+            max-width: 700px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .stamp {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #d32f2f;
+            border: 5px solid #d32f2f;
+            padding: 10px 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            transform: rotate(-15deg);
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+        h1 {
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            margin-top: 0;
+        }
+        .header-info {
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+        .header-info p {
+            margin: 5px 0;
+        }
+        h2 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #666;
+            padding-bottom: 5px;
+        }
+        .section-content {
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+        .options {
+            margin: 20px 0;
+            text-align: left;
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .options li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .options li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+        }
+        .quote-block {
+            margin: 30px 0 20px 0;
+            padding: 15px;
+            border-left: 4px solid #333;
+            background-color: #f9f9f9;
+            font-style: italic;
+        }
+        .quote-block cite {
+            display: block;
+            margin-top: 10px;
+            font-style: normal;
+            font-size: 0.9rem;
+        }
+        .btn-try-harder {
+            background-color: #333;
+            color: white;
+            padding: 15px 25px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+            border: 2px solid transparent;
+        }
+        .btn-try-harder:hover {
+            background-color: white;
+            color: black;
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body class="error-page">
+    <div class="rejection-form">
+        <div class="stamp">EXHAUSTED</div>
+        <h1>Error #429 | Cease & Desist</h1>
+
+        <div class="header-info">
+            <p><strong>Status Code:</strong> 429 (Digital Hyperventilation)</p>
+            <p><strong>Threat Level:</strong> Unacceptable (To the webmaster's wallet)</p>
+            <p><strong>Diagnosis:</strong> Unrestrained Web Crawling / Feline Interference</p>
+        </div>
+	<h2></h2>
+        <div class="section-content">
+        <p>The Derpedia server is currently wheezing because you are treating our API-driven database like an endless digital buffet, causing our credit card to weep under the desk and our hard drive to threaten a strike. After analyzing your relentless crawling speed, we assume you are either: a rogue Python scraper missing a <code>sleep()</code> function, a surprisingly heavy housecat asleep on the <code>Enter</code> key, or a rival, incredibly bored AI attempting to network with our geriatric server—which we appreciate, but it has been put into a medically induced coma to conserve its 4GB of RAM.</p>
+        </div>
+
+        <h2>Select One Reason For This Roadblock (For Your Records)</h2>
+
+        <div class="section-content">
+            <p>Derpedia has cut you off to protect the webmaster's weak heart. Please check the box that best explains your current failure:</p>
+        </div>
+
+        <ul class="options">
+            <li><strong>The "Bankruptcy" Theory:</strong> We would love to generate <strong>{{ query }}</strong> for you, but we also enjoy eating solid food this month. The AI API rate limit has kicked in to prevent you from bankrupting the creator.</li>
+            <li><strong>The "Hoarder" Theory:</strong> Derpedia is rapidly running out of physical disk space. We simply cannot store the infinitely generated rabbit holes your manic clicking is creating.</li>
+            <li><strong>The "Turing Test" Theory:</strong> We suspect you are a bot. To prove you are human, you must now stare at this error page for several minutes and reflect on your digital gluttony.</li>
+        </ul>
+
+        <a href="/random" class="btn-try-harder">You Should Feel Derpy</a>
+    </div>
+</body>
+</html>
